@@ -20,7 +20,12 @@ async function startCamera() {
 
 document.addEventListener('DOMContentLoaded', async function () {
     await startCamera();
-
+const storedData = localStorage.getItem('attendanceData');
+    if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        scannedCodes.push(parsedData);
+        updateAttendanceList();
+    }
     video.addEventListener('loadeddata', function () {
         setInterval(scanQRCode, 1000); 
     });
