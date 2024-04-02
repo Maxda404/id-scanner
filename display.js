@@ -53,7 +53,6 @@ document.addEventListener('DOMContentLoaded', function () {
     displayAttendanceData();
 });
 
-search query
 function searchAttendance() {
     const searchInput = document.getElementById('searchInput').value.toLowerCase();
     const rows = document.querySelectorAll('#attendance-table-body tr');
