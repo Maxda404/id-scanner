@@ -1,4 +1,4 @@
-// Function to retrieve attendance data from localStorage
+
 function getAttendanceDataFromLocalStorage() {
     const storedData = localStorage.getItem('attendanceData');
     if (storedData) {
@@ -7,7 +7,7 @@ function getAttendanceDataFromLocalStorage() {
     return [];
 }
 
-// Function to format timestamp
+
 function formatTimestamp(timestamp) {
     const date = new Date(timestamp);
     const month = date.getMonth() + 1;
@@ -19,7 +19,7 @@ function formatTimestamp(timestamp) {
     return `${month}/${day}/${year} ${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
 }
 
-// Function to display attendance data
+
 function displayAttendanceData() {
     const attendanceData = getAttendanceDataFromLocalStorage();
     const attendanceTableBody = document.getElementById('attendance-table-body');
@@ -39,21 +39,41 @@ function displayAttendanceData() {
 
         const nameCell = document.createElement('td');
         nameCell.textContent = entry.name;
-        nameCell.classList.add('name-cell'); // Add CSS class to prevent text wrapping
+        nameCell.classList.add('name-cell'); 
         newRow.appendChild(nameCell);
 
         const idNoCell = document.createElement('td');
         idNoCell.textContent = entry.IDNo;
-        idNoCell.classList.add('name-cell'); // Add CSS class to prevent text wrapping
+        idNoCell.classList.add('name-cell');
         newRow.appendChild(idNoCell);
 
         attendanceTableBody.appendChild(newRow);
     });
 }
 
-// Call this function when the page is loaded to display attendance data
+
 document.addEventListener('DOMContentLoaded', function () {
     displayAttendanceData();
 });
 
-// Add this code to your existing scanner page JavaScript
+
+function searchAttendance() {
+    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#attendance-table-body tr');
+
+    rows.forEach(row => {
+        const lrn = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+        const name = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+        const idNo = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
+        const dateAndTime = row.querySelector('td:nth-child(1)').textContent.toLowerCase(); 
+
+        if (lrn.includes(searchInput) || name.includes(searchInput) || idNo.includes(searchInput) || dateAndTime.includes(searchInput)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// Attach the search function to the search input field
+document.getElementById('searchInput').addEventListener('input', searchAttendance);
