@@ -20,12 +20,12 @@ async function startCamera() {
 
 document.addEventListener('DOMContentLoaded', async function () {
     await startCamera();
-const storedData = localStorage.getItem('attendanceData');
+    const storedData = localStorage.getItem('attendanceData');
     if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        scannedCodes.push(parsedData);
-        updateAttendanceList();
+        scannedCodes = JSON.parse(storedData); // Update scannedCodes array with stored data
+        updateAttendanceList(); // Update the attendance list with the stored data
     }
+
     video.addEventListener('loadeddata', function () {
         setInterval(scanQRCode, 1000); 
     });
@@ -51,6 +51,9 @@ function showSuccessMessage() {
     }, 1500);
 }
 
+function storeScannedDataLocally() {
+    localStorage.setItem('attendanceData', JSON.stringify(scannedCodes));
+}
 
 function displayScannedContent(content, timestamp) {
     const resultElement = document.getElementById('result');
@@ -93,6 +96,9 @@ function displayScannedContent(content, timestamp) {
 
     // Update the attendance list
     updateAttendanceList();
+
+    // Store the scanned data locally
+    storeScannedDataLocally();
 }
 
 function updateAttendanceList() {
@@ -126,6 +132,9 @@ function updateAttendanceList() {
 
         attendanceTableBody.appendChild(newRow);
     });
+
+    // Store the scanned data locally
+    storeScannedDataLocally();
 }
 
 function scanQRCode() {
@@ -231,22 +240,3 @@ function searchAttendance() {
         }
     });
 }
-// Function to store attendance data locally
-function storeAttendanceDataLocally(data) {
-    localStorage.setItem('attendanceData', JSON.stringify(data));
-}
-
-// Function to handle scanned data and store it locally
-function handleScannedData(content, timestamp, LRN, name, IDNo) {
-    const attendanceData = {
-        content,
-        timestamp,
-        LRN,
-        name,
-        IDNo
-    };
-    // Store attendance data locally
-    storeAttendanceDataLocally(attendanceData);
-}
-
-
