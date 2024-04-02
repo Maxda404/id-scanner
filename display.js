@@ -7,7 +7,6 @@ function getAttendanceDataFromLocalStorage() {
     return [];
 }
 
-
 function formatTimestamp(timestamp) {
     const date = new Date(timestamp);
     const month = date.getMonth() + 1;
@@ -18,7 +17,6 @@ function formatTimestamp(timestamp) {
 
     return `${month}/${day}/${year} ${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
 }
-
 
 function displayAttendanceData() {
     const attendanceData = getAttendanceDataFromLocalStorage();
@@ -44,19 +42,18 @@ function displayAttendanceData() {
 
         const idNoCell = document.createElement('td');
         idNoCell.textContent = entry.IDNo;
-        idNoCell.classList.add('name-cell');
+        idNoCell.classList.add('name-cell'); 
         newRow.appendChild(idNoCell);
 
         attendanceTableBody.appendChild(newRow);
     });
 }
 
-
 document.addEventListener('DOMContentLoaded', function () {
     displayAttendanceData();
 });
 
-
+search query
 function searchAttendance() {
     const searchInput = document.getElementById('searchInput').value.toLowerCase();
     const rows = document.querySelectorAll('#attendance-table-body tr');
@@ -75,5 +72,4 @@ function searchAttendance() {
     });
 }
 
-// Attach the search function to the search input field
 document.getElementById('searchInput').addEventListener('input', searchAttendance);
