@@ -1,7 +1,7 @@
-
 body {
     font-family: Arial, sans-serif;
-    background-color: #f2f2f2;
+    background: linear-gradient(to right, #4b6cb7, #182848); 
+    color: #fff;
     margin: 0;
     padding: 0;
 }
@@ -13,47 +13,49 @@ h1 {
 
 .table-container {
     max-width: 800px;
-    margin: 70px auto 0; 
+    margin: 90px auto 0;
     overflow-x: auto;
     position: relative;
+    background-color: #555;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    background-color: #fff;
+    background-color: #555 !important;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    border-color: #555;
 }
 
 th, td {
     padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid #ddd;
+    background-color: #555;
 }
 
 th {
-    background-color: #f0f0f0;
+    background-color: #555;
     font-weight: bold;
 }
 
 tr:hover {
-    background-color: #f9f9f9;
+    background-color: #555;
 }
 
 .entry:nth-child(even) {
-    background-color: #f2f2f2;
+    background-color: #555;
 }
 
 .entry:last-child {
     border-bottom: none;
 }
 
-
 .search-container {
     position: absolute;
-    top: 80px; 
+    top: 80px;
     left: 20px;
     width: calc(100% - 40px);
     max-width: 250px;
