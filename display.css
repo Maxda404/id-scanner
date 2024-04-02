@@ -1,4 +1,4 @@
-/* General styles */
+
 body {
     font-family: Arial, sans-serif;
     background-color: #f2f2f2;
@@ -11,11 +11,11 @@ h1 {
     margin-top: 20px;
 }
 
-/* Table styles */
 .table-container {
     max-width: 800px;
-    margin: 0 auto;
+    margin: 70px auto 0; 
     overflow-x: auto;
+    position: relative;
 }
 
 table {
@@ -48,4 +48,53 @@ tr:hover {
 
 .entry:last-child {
     border-bottom: none;
+}
+
+
+.search-container {
+    position: absolute;
+    top: 80px; 
+    left: 20px;
+    width: calc(100% - 40px);
+    max-width: 250px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    background-color: #f0f0f0;
+    border-radius: 20px;
+    padding: 0 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+}
+
+#searchInput {
+    flex-grow: 1;
+    height: 100%;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    background: transparent;
+    padding-left: 5px;
+}
+
+#searchInput:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.search-icon {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    background-color: #ccc;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.search-icon i {
+    font-size: 18px;
 }
