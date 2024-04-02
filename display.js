@@ -7,6 +7,18 @@ function getAttendanceDataFromLocalStorage() {
     return [];
 }
 
+// Function to format timestamp
+function formatTimestamp(timestamp) {
+    const date = new Date(timestamp);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const year = date.getFullYear();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+
+    return `${month}/${day}/${year} ${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+}
+
 // Function to display attendance data
 function displayAttendanceData() {
     const attendanceData = getAttendanceDataFromLocalStorage();
@@ -43,3 +55,5 @@ function displayAttendanceData() {
 document.addEventListener('DOMContentLoaded', function () {
     displayAttendanceData();
 });
+
+// Add this code to your existing scanner page JavaScript
