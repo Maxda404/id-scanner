@@ -1,6 +1,47 @@
 let scannedCodes = [];
 let video;
-let isScanning = false; 
+let isScanning = false;
+let dbPromise;
+
+function openDB() {
+    return new Promise((resolve, reject) => {
+        dbPromise = window.indexedDB.open('attendanceDB', 1);
+
+        dbPromise.onupgradeneeded = function (event) {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains('attendance')) {
+                db.createObjectStore('attendance', { keyPath: 'id', autoIncrement: true });
+            }
+        };
+
+        dbPromise.onerror = function (event) {
+            console.error('Error accessing IndexedDB:', event.target.error);
+            reject(event.target.error);
+        };
+
+        dbPromise.onsuccess = function (event) {
+            resolve(event.target.result);
+        };
+    });
+}
+
+function storeScannedDataIndexedDB(data) {
+    openDB().then(db => {
+        const tx = db.transaction('attendance', 'readwrite');
+        const store = tx.objectStore('attendance');
+        data.forEach(entry => {
+            store.add(entry);
+        });
+        tx.oncomplete = function () {
+            console.log('Scanned data stored in IndexedDB');
+        };
+        tx.onerror = function (event) {
+            console.error('Error storing scanned data:', event.target.error);
+        };
+    }).catch(error => {
+        console.error('Error opening IndexedDB:', error);
+    });
+}
 
 async function startCamera() {
     try {
@@ -19,15 +60,16 @@ async function startCamera() {
 }
 
 document.addEventListener('DOMContentLoaded', async function () {
+    await openDB(); // Initialize IndexedDB
     await startCamera();
     const storedData = localStorage.getItem('attendanceData');
     if (storedData) {
-        scannedCodes = JSON.parse(storedData); // Update scannedCodes array with stored data
-        updateAttendanceList(); // Update the attendance list with the stored data
+        scannedCodes = JSON.parse(storedData); 
+        updateAttendanceList(); 
     }
 
     video.addEventListener('loadeddata', function () {
-        setInterval(scanQRCode, 1000); 
+        scanQRCode(); 
     });
 });
 
@@ -41,10 +83,10 @@ function showSuccessMessage() {
     modal.style.display = 'block';
 
     setTimeout(() => {
-        modal.classList.add('hide'); // Add 'hide' class to trigger animation
+        modal.classList.add('hide'); 
     }, 1000);
 
-    // Remove the 'hide' class after animation completes
+    
     setTimeout(() => {
         modal.classList.remove('hide');
         modal.style.display = 'none';
@@ -53,18 +95,18 @@ function showSuccessMessage() {
 
 function storeScannedDataLocally() {
     localStorage.setItem('attendanceData', JSON.stringify(scannedCodes));
+    storeScannedDataIndexedDB(scannedCodes); 
 }
 
 function displayScannedContent(content, timestamp) {
     const resultElement = document.getElementById('result');
     resultElement.innerHTML = '';
 
-    // Display the QR code content
+    
     const contentElement = document.createElement('p');
     contentElement.textContent = content;
     resultElement.appendChild(contentElement);
 
-    // Check if the content is a URL
     const isURL = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i.test(content);
 
     if (isURL) {
@@ -77,37 +119,27 @@ function displayScannedContent(content, timestamp) {
         resultElement.textContent = content;
     }
 
-    // Display the timestamp
     const timestampElement = document.createElement('p');
     timestampElement.textContent = `Scanned at: ${formatTimestamp(timestamp)}`;
     resultElement.appendChild(timestampElement);
 
-    // Extract LRN, Name, and ID No. from the content
     const matches = content.match(/\[(.*?)\]/g);
     const LRN = matches[0].replace(/\[|\]/g, '');
-    const Name = matches[1].replace(/\[|\]/g, ' ').trim(); // Concatenate name components without line breaks
+    const Name = matches[1].replace(/\[|\]/g, ' ').trim(); 
     const IDNo = matches[2].replace(/\[|\]/g, '');
 
-    // Capitalize the first letter of each word in the name
     const capitalizedFullName = Name.replace(/\b\w/g, (char) => char.toUpperCase());
 
-    // Add the scanned code to the array with correct properties
-    scannedCodes.push({ content, LRN, name: capitalizedFullName, IDNo, timestamp }); // Include the 'content' property
+    scannedCodes.push({ content, LRN, name: capitalizedFullName, IDNo, timestamp }); 
 
-    // Update the attendance list
     updateAttendanceList();
-
-    // Store the scanned data locally
-    storeScannedDataLocally();
 }
 
 function updateAttendanceList() {
     const attendanceTableBody = document.getElementById('attendance-table-body');
 
-    // Clear existing entries in the table body
     attendanceTableBody.innerHTML = '';
 
-    // Create new entries
     scannedCodes.forEach((entry, index) => {
         const newRow = document.createElement('tr');
         newRow.classList.add('entry');
@@ -122,23 +154,22 @@ function updateAttendanceList() {
 
         const nameCell = document.createElement('td');
         nameCell.textContent = entry.name;
-        nameCell.classList.add('name-cell'); // Add CSS class to prevent text wrapping
+        nameCell.classList.add('name-cell'); 
         newRow.appendChild(nameCell);
 
         const idNoCell = document.createElement('td');
         idNoCell.textContent = entry.IDNo;
-        idNoCell.classList.add('name-cell'); // Add CSS class to prevent text wrapping
+        idNoCell.classList.add('name-cell'); 
         newRow.appendChild(idNoCell);
 
         attendanceTableBody.appendChild(newRow);
     });
 
-    // Store the scanned data locally
     storeScannedDataLocally();
 }
 
 function scanQRCode() {
-    // Set the scanning flag to true to indicate that scanning is in progress
+  
     isScanning = true;
 
     const resultElement = document.getElementById('result');
@@ -153,56 +184,50 @@ function scanQRCode() {
 
     const code = jsQR(imageData.data, imageData.width, imageData.height);
     if (code) {
-        const scannedContent = code.data.trim().toLowerCase(); // Ensure consistency by trimming and converting to lowercase
+        const scannedContent = code.data.trim().toLowerCase(); 
 
-        // Check if the scanned content contains LRN, Name, and ID No.
+        
         const matches = scannedContent.match(/\[(.*?)\]/g);
         if (matches && matches.length >= 3) {
             const timestamp = Date.now();
 
-            // Check if the scanned content already exists in the array
-            const existingEntry = scannedCodes.find(entry => entry.content.trim().toLowerCase() === scannedContent);
-
-            if (!existingEntry || (timestamp - existingEntry.timestamp) > 20 * 60 * 60 * 1000) {
-                // Display the scanned content and timestamp
+            const lastScannedEntry = scannedCodes.find(entry => entry.content.trim().toLowerCase() === scannedContent);
+            if (!lastScannedEntry || (timestamp - lastScannedEntry.timestamp) > 14 * 60 * 60 * 1000) {
+         
                 displayScannedContent(scannedContent, timestamp);
 
-                // Show success message
                 showSuccessMessage();
             } else {
-                resultElement.textContent = 'Student already scanned for today.';
+                
+                resultElement.textContent = 'Student already scanned for today';
             }
         } else {
-            // Display "Invalid student QR" message if the QR code is missing required information
+            
             resultElement.textContent = 'Invalid Student ID';
         }
     } else {
         resultElement.textContent = 'No QR code detected.';
     }
-
-    // Reset the scanning flag
+    setTimeout(scanQRCode, 1000);
     isScanning = false;
 }
 
-// Function to navigate to the attendance list page
 function navigateToAttendanceList() {
     const attendanceList = document.getElementById('attendance-list');
     attendanceList.style.display = 'block';
 
-    // Update the attendance list
     updateAttendanceList();
 }
 
-// Function to close the attendance list section
 function closeAttendanceList() {
     const attendanceList = document.getElementById('attendance-list');
     attendanceList.style.display = 'none';
 }
 
 document.getElementById('attendanceButton').addEventListener('click', function () {
-    this.classList.add('button-clicked'); // Add class to change background color
+    this.classList.add('button-clicked'); 
     setTimeout(() => {
-        this.classList.remove('button-clicked'); // Remove class after a short delay
+        this.classList.remove('button-clicked'); 
     }, 100);
     navigateToAttendanceList();
 });
@@ -222,7 +247,6 @@ function formatTimestamp(timestamp) {
     return `${month}/${day}/${year} ${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
 }
 
-// Function to filter and display attendance entries based on search query
 function searchAttendance() {
     const searchInput = document.getElementById('searchInput').value.toLowerCase();
     const rows = document.querySelectorAll('#attendance-table-body tr');
@@ -231,7 +255,7 @@ function searchAttendance() {
         const lrn = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
         const name = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
         const idNo = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
-        const dateAndTime = row.querySelector('td:nth-child(1)').textContent.toLowerCase(); // Include date and time column
+        const dateAndTime = row.querySelector('td:nth-child(1)').textContent.toLowerCase(); 
 
         if (lrn.includes(searchInput) || name.includes(searchInput) || idNo.includes(searchInput) || dateAndTime.includes(searchInput)) {
             row.style.display = '';
