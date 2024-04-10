@@ -139,6 +139,12 @@ function displayScannedContent(content, timestamp) {
     if (!isAlreadyScanned) {
         showSuccessMessage();
     }
+
+    // Play the audio
+    const scanAudio = document.getElementById('scanAudio');
+    if (scanAudio) {
+        scanAudio.play();
+    }
 }
 
 function updateAttendanceList() {
@@ -200,7 +206,7 @@ function scanQRCode() {
             if (!isAlreadyScanned) {
                 displayScannedContent(scannedContent, timestamp);
             } else {
-                resultElement.textContent = 'QR code already scanned.';
+                resultElement.textContent = 'student already scanned for today.';
             }
         } else {
             resultElement.textContent = 'Invalid Student ID';
