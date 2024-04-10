@@ -19,12 +19,11 @@
 
     <div id="result"></div>
 
-    <!-- Modal for success message -->
+   
     <div id="modal">
         <p>Student scanned, thank you</p>
     </div>
-
-    <!-- Button for accessing today's attendance list -->
+   
     <button id="attendanceButton" onclick="navigateToAttendanceList()" style="background-color: #444; color:white">Today's Attendance</button>
 
     <div id="attendance-list">
@@ -34,7 +33,7 @@
             <input type="text" id="searchInput" oninput="searchAttendance()" placeholder="Search...">
             <i class="fas fa-search" id="searchIcon"></i>
         </div>
-        <div id="scan-numbers"></div> <!-- Scan numbers will be displayed here -->
+        <div id="scan-numbers"></div> 
         <table id="attendance-table">
             <thead>
                 <tr>
@@ -45,13 +44,15 @@
                 </tr>
             </thead>
             <tbody id="attendance-table-body">
-                <!-- Table rows will be dynamically added here -->
+               
             </tbody>
         </table>
     </div>
+
+    <audio id="audio" src="beep.mp3"></audio>
+
     <script src="jsQR.js"></script>
     <script src="qrScanner.js"></script>
-    
 
 </body>
 </html>
