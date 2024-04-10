@@ -1,10 +1,26 @@
+function getAttendanceDataFromIndexedDB() {
+    return new Promise((resolve, reject) => {
+        const dbPromise = window.indexedDB.open('attendanceDB', 1);
 
-function getAttendanceDataFromLocalStorage() {
-    const storedData = localStorage.getItem('attendanceData');
-    if (storedData) {
-        return JSON.parse(storedData);
-    }
-    return [];
+        dbPromise.onerror = function (event) {
+            reject(event.target.error);
+        };
+
+        dbPromise.onsuccess = function (event) {
+            const db = event.target.result;
+            const transaction = db.transaction('attendance', 'readonly');
+            const objectStore = transaction.objectStore('attendance');
+            const request = objectStore.getAll();
+
+            request.onerror = function(event) {
+                reject(event.target.error);
+            };
+
+            request.onsuccess = function(event) {
+                resolve(request.result);
+            };
+        };
+    });
 }
 
 function formatTimestamp(timestamp) {
@@ -19,34 +35,39 @@ function formatTimestamp(timestamp) {
 }
 
 function displayAttendanceData() {
-    const attendanceData = getAttendanceDataFromLocalStorage();
-    const attendanceTableBody = document.getElementById('attendance-table-body');
-    attendanceTableBody.innerHTML = '';
+    getAttendanceDataFromIndexedDB()
+        .then(attendanceData => {
+            const attendanceTableBody = document.getElementById('attendance-table-body');
+            attendanceTableBody.innerHTML = '';
 
-    attendanceData.forEach((entry) => {
-        const newRow = document.createElement('tr');
-        newRow.classList.add('entry');
+            attendanceData.forEach((entry) => {
+                const newRow = document.createElement('tr');
+                newRow.classList.add('entry');
 
-        const dateCell = document.createElement('td');
-        dateCell.textContent = formatTimestamp(entry.timestamp);
-        newRow.appendChild(dateCell);
+                const dateCell = document.createElement('td');
+                dateCell.textContent = formatTimestamp(entry.timestamp);
+                newRow.appendChild(dateCell);
 
-        const lrnCell = document.createElement('td');
-        lrnCell.textContent = entry.LRN;
-        newRow.appendChild(lrnCell);
+                const lrnCell = document.createElement('td');
+                lrnCell.textContent = entry.LRN;
+                newRow.appendChild(lrnCell);
 
-        const nameCell = document.createElement('td');
-        nameCell.textContent = entry.name;
-        nameCell.classList.add('name-cell'); 
-        newRow.appendChild(nameCell);
+                const nameCell = document.createElement('td');
+                nameCell.textContent = entry.name;
+                nameCell.classList.add('name-cell'); 
+                newRow.appendChild(nameCell);
 
-        const idNoCell = document.createElement('td');
-        idNoCell.textContent = entry.IDNo;
-        idNoCell.classList.add('name-cell'); 
-        newRow.appendChild(idNoCell);
+                const idNoCell = document.createElement('td');
+                idNoCell.textContent = entry.IDNo;
+                idNoCell.classList.add('name-cell'); 
+                newRow.appendChild(idNoCell);
 
-        attendanceTableBody.appendChild(newRow);
-    });
+                attendanceTableBody.appendChild(newRow);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching data from IndexedDB:', error);
+        });
 }
 
 document.addEventListener('DOMContentLoaded', function () {
