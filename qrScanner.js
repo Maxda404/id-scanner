@@ -60,16 +60,16 @@ async function startCamera() {
 }
 
 document.addEventListener('DOMContentLoaded', async function () {
-    await openDB(); // Initialize IndexedDB
+    await openDB();
     await startCamera();
     const storedData = localStorage.getItem('attendanceData');
     if (storedData) {
-        scannedCodes = JSON.parse(storedData); 
-        updateAttendanceList(); 
+        scannedCodes = JSON.parse(storedData);
+        updateAttendanceList();
     }
 
     video.addEventListener('loadeddata', function () {
-        scanQRCode(); 
+        scanQRCode();
     });
 });
 
@@ -83,10 +83,9 @@ function showSuccessMessage() {
     modal.style.display = 'block';
 
     setTimeout(() => {
-        modal.classList.add('hide'); 
+        modal.classList.add('hide');
     }, 1000);
 
-    
     setTimeout(() => {
         modal.classList.remove('hide');
         modal.style.display = 'none';
@@ -95,14 +94,13 @@ function showSuccessMessage() {
 
 function storeScannedDataLocally() {
     localStorage.setItem('attendanceData', JSON.stringify(scannedCodes));
-    storeScannedDataIndexedDB(scannedCodes); 
+    storeScannedDataIndexedDB(scannedCodes);
 }
 
 function displayScannedContent(content, timestamp) {
     const resultElement = document.getElementById('result');
     resultElement.innerHTML = '';
 
-    
     const contentElement = document.createElement('p');
     contentElement.textContent = content;
     resultElement.appendChild(contentElement);
@@ -125,19 +123,21 @@ function displayScannedContent(content, timestamp) {
 
     const matches = content.match(/\[(.*?)\]/g);
     const LRN = matches[0].replace(/\[|\]/g, '');
-    const Name = matches[1].replace(/\[|\]/g, ' ').trim(); 
+    const Name = matches[1].replace(/\[|\]/g, ' ').trim();
     const IDNo = matches[2].replace(/\[|\]/g, '');
 
     const capitalizedFullName = Name.replace(/\b\w/g, (char) => char.toUpperCase());
 
-    scannedCodes.push({ content, LRN, name: capitalizedFullName, IDNo, timestamp }); 
+    scannedCodes.push({ content, LRN, name: capitalizedFullName, IDNo, timestamp });
 
     updateAttendanceList();
+
+    const audio = document.getElementById('audio');
+    audio.play();
 }
 
 function updateAttendanceList() {
     const attendanceTableBody = document.getElementById('attendance-table-body');
-
     attendanceTableBody.innerHTML = '';
 
     scannedCodes.forEach((entry, index) => {
@@ -154,12 +154,12 @@ function updateAttendanceList() {
 
         const nameCell = document.createElement('td');
         nameCell.textContent = entry.name;
-        nameCell.classList.add('name-cell'); 
+        nameCell.classList.add('name-cell');
         newRow.appendChild(nameCell);
 
         const idNoCell = document.createElement('td');
         idNoCell.textContent = entry.IDNo;
-        idNoCell.classList.add('name-cell'); 
+        idNoCell.classList.add('name-cell');
         newRow.appendChild(idNoCell);
 
         attendanceTableBody.appendChild(newRow);
@@ -169,7 +169,6 @@ function updateAttendanceList() {
 }
 
 function scanQRCode() {
-  
     isScanning = true;
 
     const resultElement = document.getElementById('result');
@@ -184,31 +183,21 @@ function scanQRCode() {
 
     const code = jsQR(imageData.data, imageData.width, imageData.height);
     if (code) {
-        const scannedContent = code.data.trim().toLowerCase(); 
+        const scannedContent = code.data.trim().toLowerCase();
 
-        
         const matches = scannedContent.match(/\[(.*?)\]/g);
         if (matches && matches.length >= 3) {
             const timestamp = Date.now();
 
-            const lastScannedEntry = scannedCodes.find(entry => entry.content.trim().toLowerCase() === scannedContent);
-            if (!lastScannedEntry || (timestamp - lastScannedEntry.timestamp) > 14 * 60 * 60 * 1000) {
-         
-                displayScannedContent(scannedContent, timestamp);
-
-                showSuccessMessage();
-            } else {
-                
-                resultElement.textContent = 'Student already scanned for today';
-            }
+            displayScannedContent(scannedContent, timestamp);
+            showSuccessMessage();
         } else {
-            
             resultElement.textContent = 'Invalid Student ID';
         }
     } else {
         resultElement.textContent = 'No QR code detected.';
     }
-    setTimeout(scanQRCode, 1000);
+
     isScanning = false;
 }
 
@@ -225,9 +214,9 @@ function closeAttendanceList() {
 }
 
 document.getElementById('attendanceButton').addEventListener('click', function () {
-    this.classList.add('button-clicked'); 
+    this.classList.add('button-clicked');
     setTimeout(() => {
-        this.classList.remove('button-clicked'); 
+        this.classList.remove('button-clicked');
     }, 100);
     navigateToAttendanceList();
 });
@@ -245,22 +234,4 @@ function formatTimestamp(timestamp) {
     const minutes = date.getMinutes();
 
     return `${month}/${day}/${year} ${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
-}
-
-function searchAttendance() {
-    const searchInput = document.getElementById('searchInput').value.toLowerCase();
-    const rows = document.querySelectorAll('#attendance-table-body tr');
-
-    rows.forEach(row => {
-        const lrn = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-        const name = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-        const idNo = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
-        const dateAndTime = row.querySelector('td:nth-child(1)').textContent.toLowerCase(); 
-
-        if (lrn.includes(searchInput) || name.includes(searchInput) || idNo.includes(searchInput) || dateAndTime.includes(searchInput)) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
 }
