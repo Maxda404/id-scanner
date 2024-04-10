@@ -30,7 +30,17 @@ function storeScannedDataIndexedDB(data) {
         const tx = db.transaction('attendance', 'readwrite');
         const store = tx.objectStore('attendance');
         data.forEach(entry => {
-            store.add(entry);
+            const request = store.get(entry.content);
+            request.onsuccess = function(event) {
+                const existingEntry = event.target.result;
+                if (!existingEntry) {
+                    // If the entry doesn't already exist, add it to the database
+                    store.add(entry);
+                }
+            };
+            request.onerror = function(event) {
+                console.error('Error checking for existing entry:', event.target.error);
+            };
         });
         tx.oncomplete = function () {
             console.log('Scanned data stored in IndexedDB');
@@ -42,6 +52,7 @@ function storeScannedDataIndexedDB(data) {
         console.error('Error opening IndexedDB:', error);
     });
 }
+
 
 async function startCamera() {
     try {
@@ -180,9 +191,19 @@ function updateAttendanceList() {
     storeScannedDataLocally();
 }
 
+let lastScanTime = 0;
+const debounceInterval = 1000;
 function scanQRCode() {
+    if (isScanning) return;
     isScanning = true;
-
+  
+    const now = Date.now();
+    if (now - lastScanTime < debounceInterval) {
+        isScanning = false;
+        setTimeout(scanQRCode, 100);
+        return; // Exit the function to prevent multiple scans
+    }
+    lastScanTime = now;
     const resultElement = document.getElementById('result');
 
     const canvasElement = document.createElement('canvas');
@@ -215,6 +236,7 @@ function scanQRCode() {
         resultElement.textContent = 'No QR code detected.';
     }
 
+    // Call the function again after 1 second
     setTimeout(scanQRCode, 1000);
 
     isScanning = false;
