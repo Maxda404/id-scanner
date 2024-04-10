@@ -128,16 +128,22 @@ function displayScannedContent(content, timestamp) {
 
     const capitalizedFullName = Name.replace(/\b\w/g, (char) => char.toUpperCase());
 
-    scannedCodes.push({ content, LRN, name: capitalizedFullName, IDNo, timestamp });
+    const isAlreadyScanned = scannedCodes.some(code => code.content === content);
+    
+    if (!isAlreadyScanned) {
+        scannedCodes.push({ content, LRN, name: capitalizedFullName, IDNo, timestamp });
+    }
 
     updateAttendanceList();
 
-    const audio = document.getElementById('audio');
-    audio.play();
+    if (!isAlreadyScanned) {
+        showSuccessMessage();
+    }
 }
 
 function updateAttendanceList() {
     const attendanceTableBody = document.getElementById('attendance-table-body');
+
     attendanceTableBody.innerHTML = '';
 
     scannedCodes.forEach((entry, index) => {
@@ -189,14 +195,21 @@ function scanQRCode() {
         if (matches && matches.length >= 3) {
             const timestamp = Date.now();
 
-            displayScannedContent(scannedContent, timestamp);
-            showSuccessMessage();
+            const isAlreadyScanned = scannedCodes.some(code => code.content === scannedContent);
+
+            if (!isAlreadyScanned) {
+                displayScannedContent(scannedContent, timestamp);
+            } else {
+                resultElement.textContent = 'QR code already scanned.';
+            }
         } else {
             resultElement.textContent = 'Invalid Student ID';
         }
     } else {
         resultElement.textContent = 'No QR code detected.';
     }
+
+    setTimeout(scanQRCode, 1000);
 
     isScanning = false;
 }
@@ -234,4 +247,22 @@ function formatTimestamp(timestamp) {
     const minutes = date.getMinutes();
 
     return `${month}/${day}/${year} ${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+}
+
+function searchAttendance() {
+    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#attendance-table-body tr');
+
+    rows.forEach(row => {
+        const lrn = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+        const name = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+        const idNo = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
+        const dateAndTime = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+
+        if (lrn.includes(searchInput) || name.includes(searchInput) || idNo.includes(searchInput) || dateAndTime.includes(searchInput)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
 }
