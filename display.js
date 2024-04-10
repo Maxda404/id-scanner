@@ -65,45 +65,53 @@ function displayAttendanceData() {
             const attendanceTableBody = document.getElementById('attendance-table-body');
             attendanceTableBody.innerHTML = '';
 
+            const displayedTimestamps = []; // Array to keep track of displayed timestamps
+
             attendanceData.forEach((entry) => {
-                const newRow = document.createElement('tr');
-                newRow.classList.add('entry');
+                // Check if the timestamp is already displayed
+                if (!displayedTimestamps.includes(entry.timestamp)) {
+                    const newRow = document.createElement('tr');
+                    newRow.classList.add('entry');
 
-                const dateCell = document.createElement('td');
-                dateCell.textContent = formatTimestamp(entry.timestamp);
-                newRow.appendChild(dateCell);
+                    const dateCell = document.createElement('td');
+                    dateCell.textContent = formatTimestamp(entry.timestamp);
+                    newRow.appendChild(dateCell);
 
-                const lrnCell = document.createElement('td');
-                lrnCell.textContent = entry.LRN;
-                newRow.appendChild(lrnCell);
+                    const lrnCell = document.createElement('td');
+                    lrnCell.textContent = entry.LRN;
+                    newRow.appendChild(lrnCell);
 
-                const nameCell = document.createElement('td');
-                nameCell.textContent = entry.name;
-                nameCell.classList.add('name-cell'); 
-                newRow.appendChild(nameCell);
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = entry.name;
+                    nameCell.classList.add('name-cell'); 
+                    newRow.appendChild(nameCell);
 
-                const idNoCell = document.createElement('td');
-                idNoCell.textContent = entry.IDNo;
-                idNoCell.classList.add('name-cell'); 
-                newRow.appendChild(idNoCell);
+                    const idNoCell = document.createElement('td');
+                    idNoCell.textContent = entry.IDNo;
+                    idNoCell.classList.add('name-cell'); 
+                    newRow.appendChild(idNoCell);
 
-                const deleteCell = document.createElement('td');
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
-                deleteButton.classList.add('delete-button');
-                deleteButton.addEventListener('click', function() {
-                    deleteAttendance(entry.id);
-                });
-                deleteCell.appendChild(deleteButton);
-                newRow.appendChild(deleteCell);
+                    const deleteCell = document.createElement('td');
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.classList.add('delete-button');
+                    deleteButton.addEventListener('click', function() {
+                        deleteAttendance(entry.id);
+                    });
+                    deleteCell.appendChild(deleteButton);
+                    newRow.appendChild(deleteCell);
 
-                attendanceTableBody.appendChild(newRow);
+                    attendanceTableBody.appendChild(newRow);
+
+                    displayedTimestamps.push(entry.timestamp); // Add the timestamp to the displayed timestamps array
+                }
             });
         })
         .catch(error => {
             console.error('Error fetching data from IndexedDB:', error);
         });
 }
+
 
 document.addEventListener('DOMContentLoaded', function () {
     displayAttendanceData();
