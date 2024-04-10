@@ -8,7 +8,7 @@ body {
     align-items: center;
     justify-content: center;
     height: 100vh;
-    background: linear-gradient(to right, #4b6cb7, #182848); /* Background gradient */
+    background: linear-gradient(to right, #4b6cb7, #182848); 
     color: #fff;
 }
 
@@ -123,8 +123,10 @@ button:hover {
     box-sizing: border-box;
     border-radius: 20px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    overflow-y: auto;
+    overflow-y: auto; /* Enable vertical scrolling */
+    max-height: 80%; /* Limit the height of the attendance window */
 }
+
 
 #attendance-list h2 {
     margin-bottom: 30px;
