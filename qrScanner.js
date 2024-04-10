@@ -116,18 +116,6 @@ function displayScannedContent(content, timestamp) {
     contentElement.textContent = content;
     resultElement.appendChild(contentElement);
 
-    const isURL = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i.test(content);
-
-    if (isURL) {
-        const link = document.createElement('a');
-        link.href = content;
-        link.target = '_blank';
-        link.textContent = content;
-        resultElement.appendChild(link);
-    } else {
-        resultElement.textContent = content;
-    }
-
     const timestampElement = document.createElement('p');
     timestampElement.textContent = `Scanned at: ${formatTimestamp(timestamp)}`;
     resultElement.appendChild(timestampElement);
@@ -139,24 +127,23 @@ function displayScannedContent(content, timestamp) {
 
     const capitalizedFullName = Name.replace(/\b\w/g, (char) => char.toUpperCase());
 
+   
     const isAlreadyScanned = scannedCodes.some(code => code.content === content);
     
     if (!isAlreadyScanned) {
+        
         scannedCodes.push({ content, LRN, name: capitalizedFullName, IDNo, timestamp });
-    }
-
-    updateAttendanceList();
-
-    if (!isAlreadyScanned) {
+        updateAttendanceList();
         showSuccessMessage();
     }
 
-    // Play the audio
+  
     const scanAudio = document.getElementById('scanAudio');
     if (scanAudio) {
         scanAudio.play();
     }
 }
+
 
 function updateAttendanceList() {
     const attendanceTableBody = document.getElementById('attendance-table-body');
@@ -191,19 +178,11 @@ function updateAttendanceList() {
     storeScannedDataLocally();
 }
 
-let lastScanTime = 0;
-const debounceInterval = 1000;
 function scanQRCode() {
     if (isScanning) return;
     isScanning = true;
-  
-    const now = Date.now();
-    if (now - lastScanTime < debounceInterval) {
-        isScanning = false;
-        setTimeout(scanQRCode, 100);
-        return; // Exit the function to prevent multiple scans
-    }
-    lastScanTime = now;
+
+    const now = Date.now(); // Current timestamp
     const resultElement = document.getElementById('result');
 
     const canvasElement = document.createElement('canvas');
@@ -220,14 +199,20 @@ function scanQRCode() {
 
         const matches = scannedContent.match(/\[(.*?)\]/g);
         if (matches && matches.length >= 3) {
-            const timestamp = Date.now();
+            const timestamp = now; // Use milliseconds
 
-            const isAlreadyScanned = scannedCodes.some(code => code.content === scannedContent);
+            // Check if any previous scan occurred on the same day
+            const isAlreadyScanned = scannedCodes.some(code => {
+                const date = new Date(code.timestamp);
+                const currentDay = new Date(timestamp).getDate();
+                const scannedDay = date.getDate();
+                return code.content === scannedContent && currentDay === scannedDay;
+            });
 
             if (!isAlreadyScanned) {
                 displayScannedContent(scannedContent, timestamp);
             } else {
-                resultElement.textContent = 'student already scanned for today.';
+                resultElement.textContent = 'Student already scanned today.';
             }
         } else {
             resultElement.textContent = 'Invalid Student ID';
@@ -241,6 +226,45 @@ function scanQRCode() {
 
     isScanning = false;
 }
+
+
+function displayScannedContent(content, timestamp) {
+    const resultElement = document.getElementById('result');
+    resultElement.innerHTML = '';
+
+    const contentElement = document.createElement('p');
+    contentElement.textContent = content;
+    resultElement.appendChild(contentElement);
+
+    const timestampElement = document.createElement('p');
+    timestampElement.textContent = `Scanned at: ${formatTimestamp(timestamp)}`;
+    resultElement.appendChild(timestampElement);
+
+    const matches = content.match(/\[(.*?)\]/g);
+    const LRN = matches[0].replace(/\[|\]/g, '');
+    const Name = matches[1].replace(/\[|\]/g, ' ').trim();
+    const IDNo = matches[2].replace(/\[|\]/g, '');
+
+    const capitalizedFullName = Name.replace(/\b\w/g, (char) => char.toUpperCase());
+
+    scannedCodes.push({ content, LRN, name: capitalizedFullName, IDNo, timestamp });
+    updateAttendanceList();
+    showSuccessMessage();
+}
+
+function formatTimestamp(timestamp) {
+    const date = new Date(timestamp);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const year = date.getFullYear();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const seconds = date.getSeconds();
+    const milliseconds = date.getMilliseconds();
+
+    return `${month}/${day}/${year} ${hours}:${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}.${milliseconds}`;
+}
+
 
 function navigateToAttendanceList() {
     const attendanceList = document.getElementById('attendance-list');
