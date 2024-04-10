@@ -23,6 +23,31 @@ function getAttendanceDataFromIndexedDB() {
     });
 }
 
+function deleteAttendanceDataFromIndexedDB(id) {
+    return new Promise((resolve, reject) => {
+        const dbPromise = window.indexedDB.open('attendanceDB', 1);
+
+        dbPromise.onerror = function (event) {
+            reject(event.target.error);
+        };
+
+        dbPromise.onsuccess = function (event) {
+            const db = event.target.result;
+            const transaction = db.transaction('attendance', 'readwrite');
+            const objectStore = transaction.objectStore('attendance');
+            const request = objectStore.delete(id);
+
+            request.onerror = function(event) {
+                reject(event.target.error);
+            };
+
+            request.onsuccess = function(event) {
+                resolve();
+            };
+        };
+    });
+}
+
 function formatTimestamp(timestamp) {
     const date = new Date(timestamp);
     const month = date.getMonth() + 1;
@@ -62,6 +87,16 @@ function displayAttendanceData() {
                 idNoCell.classList.add('name-cell'); 
                 newRow.appendChild(idNoCell);
 
+                const deleteCell = document.createElement('td');
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.classList.add('delete-button');
+                deleteButton.addEventListener('click', function() {
+                    deleteAttendance(entry.id);
+                });
+                deleteCell.appendChild(deleteButton);
+                newRow.appendChild(deleteCell);
+
                 attendanceTableBody.appendChild(newRow);
             });
         })
@@ -73,6 +108,41 @@ function displayAttendanceData() {
 document.addEventListener('DOMContentLoaded', function () {
     displayAttendanceData();
 });
+
+function deleteAttendance(id) {
+    deleteAttendanceDataFromIndexedDB(id)
+        .then(() => {
+            displayAttendanceData();
+        })
+        .catch(error => {
+            console.error('Error deleting data:', error);
+        });
+}
+
+function deleteAllAttendanceData() {
+    if (confirm('Are you sure you want to delete all attendance data?')) {
+        const dbPromise = window.indexedDB.open('attendanceDB', 1);
+
+        dbPromise.onerror = function (event) {
+            console.error('Error opening IndexedDB:', event.target.error);
+        };
+
+        dbPromise.onsuccess = function (event) {
+            const db = event.target.result;
+            const transaction = db.transaction('attendance', 'readwrite');
+            const objectStore = transaction.objectStore('attendance');
+            const request = objectStore.clear();
+
+            request.onerror = function(event) {
+                console.error('Error clearing data:', event.target.error);
+            };
+
+            request.onsuccess = function(event) {
+                displayAttendanceData();
+            };
+        };
+    }
+}
 
 function searchAttendance() {
     const searchInput = document.getElementById('searchInput').value.toLowerCase();
