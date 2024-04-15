@@ -65,10 +65,10 @@ function displayAttendanceData() {
             const attendanceTableBody = document.getElementById('attendance-table-body');
             attendanceTableBody.innerHTML = '';
 
-            const displayedTimestamps = []; // Array to keep track of displayed timestamps
+            const displayedTimestamps = [];
 
             attendanceData.forEach((entry) => {
-                // Check if the timestamp is already displayed
+                
                 if (!displayedTimestamps.includes(entry.timestamp)) {
                     const newRow = document.createElement('tr');
                     newRow.classList.add('entry');
@@ -103,7 +103,7 @@ function displayAttendanceData() {
 
                     attendanceTableBody.appendChild(newRow);
 
-                    displayedTimestamps.push(entry.timestamp); // Add the timestamp to the displayed timestamps array
+                    displayedTimestamps.push(entry.timestamp);
                 }
             });
         })
